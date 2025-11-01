@@ -1,17 +1,21 @@
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "assert.h"
 #include "mem.h"
 #include "stack.h"
 
 #define T Stack_T
+#define TYPEID 0xCAFEBABE
+#define isBadPtr(p) ((p) == NULL || ((uintptr_t)(void *)(p))%8 != 0)
 
 struct T {
-	unsigned count;
 	struct elem {
 		void *x;
 		struct elem *link;
 	} *head;
+	unsigned count;
+	unsigned typeid;
 };
 
 T Stack_new(void) {
@@ -20,18 +24,19 @@ T Stack_new(void) {
 	NEW(stk);
 	stk->count = 0U;
 	stk->head = NULL;
+	stk->typeid = TYPEID;
 	return stk;
 }
 
 bool Stack_empty(T stk) {
-	assert(stk);
+	assert(!isBadPtr(stk));
 	return stk->count == 0U;
 }
 
 void Stack_push(T stk, void *x) {
 	struct elem *t;
 
-	assert(stk);
+	assert(!isBadPtr(stk));
 	NEW(t);
 	t->x = x;
 	t->link = stk->head;
@@ -43,7 +48,7 @@ void *Stack_pop(T stk) {
 	void *x;
 	struct elem *t;
 
-	assert(stk);
+	assert(!isBadPtr(stk));
 	assert(stk->count > 0U);
 	t = stk->head;
 	stk->head = t->link;
@@ -63,3 +68,5 @@ void Stack_free(T *stk) {
 	}
 	FREE(*stk);
 }
+
+#undef TYPEID

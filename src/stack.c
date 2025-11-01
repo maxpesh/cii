@@ -15,14 +15,16 @@ struct T {
 		struct elem *link;
 	} *head;
 	unsigned count;
+	unsigned maxcount;
 	unsigned typeid;
 };
 
-T Stack_new(void) {
+T Stack_new(unsigned maxcount) {
 	T stk;
 
 	NEW(stk);
 	stk->count = 0U;
+	stk->maxcount = maxcount;
 	stk->head = NULL;
 	stk->typeid = TYPEID;
 	return stk;
@@ -37,6 +39,7 @@ void Stack_push(T stk, void *x) {
 	struct elem *t;
 
 	assert(!isBadPtr(stk));
+	assert(stk->count + 1 < stk->maxcount);
 	NEW(t);
 	t->x = x;
 	t->link = stk->head;

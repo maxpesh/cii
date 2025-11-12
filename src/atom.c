@@ -10,6 +10,7 @@
 static struct atom {
 	struct atom *link;
 	size_t len;
+	unsigned long hash;
 	char str[];
 } *buckets[2048];
 static unsigned long scatter[] = {
@@ -73,16 +74,16 @@ size_t Atom_length(const char *str) {
 }
 
 const char *Atom_new(const char *str, size_t len) {
-	unsigned long h;
+	unsigned long hash, h;
 	size_t i;
 	struct atom *p;
 
 	assert(str);
-	for (h = 0, i = 0; i < len; i++)
-		h = (h<<1) + scatter[(unsigned char)str[i]];
-	h %= NELEMS(buckets);
+	for (hash = 0, i = 0; i < len; i++)
+		hash = (hash<<1) + scatter[(unsigned char)str[i]];
+	h = hash % NELEMS(buckets);
 	for (p = buckets[h]; p; p = p->link) {
-		if (len == p->len) {
+		if (hash == p->hash && len == p->len) {
 			for (i = 0; i < len && p->str[i] == str[i]; )
 				i++;
 			if (i == len)

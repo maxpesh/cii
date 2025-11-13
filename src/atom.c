@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
 #include "atom.h"
 #include "assert.h"
 #include "mem.h"
@@ -12,7 +13,8 @@ static struct atom {
 	size_t len;
 	unsigned long hash;
 	char str[];
-} *buckets[2048];
+} **buckets;
+static size_t buckets_len;
 static unsigned long scatter[] = {
 2078917053, 143302914, 1027100827, 1953210302, 755253631, 2002600785,
 1405390230, 45248011, 1099951567, 433832350, 2018585307, 438263339,
@@ -63,7 +65,7 @@ size_t Atom_length(const char *str) {
 	struct atom *p;
 
 	assert(str);
-	for (size_t i = 0; i < NELEMS(buckets); ++i) {
+	for (size_t i = 0; i < buckets_len; ++i) {
 		for (p = buckets[i]; p; p = p->link) {
 			if (p->str == str)
 				return p->len;
@@ -81,7 +83,7 @@ const char *Atom_new(const char *str, size_t len) {
 	assert(str);
 	for (hash = 0, i = 0; i < len; i++)
 		hash = (hash<<1) + scatter[(unsigned char)str[i]];
-	h = hash % NELEMS(buckets);
+	h = hash % buckets_len;
 	for (p = buckets[h]; p; p = p->link) {
 		if (hash == p->hash && len == p->len) {
 			for (i = 0; i < len && p->str[i] == str[i]; )
@@ -123,4 +125,10 @@ const char *Atom_int(long n) {
 	if (n < 0)
 		*--p = '-';
 	return Atom_new(p, (str + sizeof str) - p);
+}
+
+extern void Atom_init(size_t len) {
+	assert(PTRDIFF_MAX / sizeof *buckets > len);
+	buckets_len = len;
+	buckets = ALLOC((sizeof *buckets)*len);
 }

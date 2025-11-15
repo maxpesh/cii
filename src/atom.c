@@ -128,7 +128,31 @@ const char *Atom_int(long n) {
 }
 
 extern void Atom_init(size_t len) {
-	assert(PTRDIFF_MAX / sizeof *buckets > len);
+	assert(SIZE_MAX / sizeof *buckets > len);
 	buckets_len = len;
 	buckets = ALLOC((sizeof *buckets)*len);
 }
+
+extern void Atom_free(const char *str) {
+	assert(str);
+	for (size_t i = 0; i < buckets_len; ++i) {
+		for (struct atom *p = buckets[i]; p; p = p->link) {
+			if (p->str == str) {
+				FREE(p);
+				return;
+			}
+		}
+	}
+	assert(0);
+}
+
+extern void Atom_reset(void) {
+	for (size_t i = 0; i < buckets_len; ++i) {
+		for (struct atom *p = buckets[i], *next; p; p = next) {
+			next = p->link;
+			FREE(p);
+		}
+	}
+	FREE(buckets);
+}
+

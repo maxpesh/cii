@@ -10,5 +10,7 @@ extern const char *Atom_int(long n);
 extern void Atom_init(size_t len);
 extern void Atom_free(const char *str);
 extern void Atom_reset(void);
+extern void Atom_vload(const char *str, ...);
+extern void Atom_aload(const char *str[]);
 
 #endif

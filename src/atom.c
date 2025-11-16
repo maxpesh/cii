@@ -77,6 +77,14 @@ size_t Atom_length(const char *str) {
 }
 
 const char *Atom_new(const char *str, size_t len) {
+	const char *strcopy = "";
+
+	if (len > 0)
+		memcpy(strcpy, str, len);
+	return Atom_add(strcpy, len);
+}
+
+extern const char *Atom_add(const char *str, size_t len) {
 	unsigned long hash, h;
 	size_t i;
 	struct atom *p;
@@ -95,8 +103,6 @@ const char *Atom_new(const char *str, size_t len) {
 	}
 	p = ALLOC(sizeof (*p) + len + 1);
 	p->len = len;
-	if (len > 0)
-		memcpy(p->str, str, len);
 	p->str[len] = '\0';
 	p->link = buckets[h];
 	buckets[h] = p;

@@ -7,7 +7,7 @@
 
 #define T Stack_T
 #define TYPEID 0xCAFEBABE
-#define isBadPtr(p) ((p) == NULL || ((uintptr_t)(void *)(p))%8 != 0)
+#define isBadPtr(p) ((p) == NULL || ((uintptr_t)(void *)(p))%_Alignof(T) != 0)
 
 struct T {
 	struct elem {
